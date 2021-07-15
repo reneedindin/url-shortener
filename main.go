@@ -11,7 +11,7 @@ import (
 func main(){
 	cfg := &redis.Config{
 		Addr: "127.0.0.1:6379",
-		Password: "123456",
+		Password: "",
 		DB: 0,
 	}
 	client, err := redis.NewRedisClient(cfg)

@@ -1,6 +1,11 @@
 package model
 
 type URL struct {
-	url string `json:"url"`
-	expireAt string `json:"expireAt"`
+	ID string `json:"id"`
+	ShortUrl string `json:"shortUrl"`
+}
+
+type ShortURLInfo struct {
+	URL string `json:"url"`
+	ExpireAt string `json:"expireAt"`
 }

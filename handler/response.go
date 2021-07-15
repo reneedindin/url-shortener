@@ -1,6 +1,11 @@
 package handler
 
-type Response struct {
-	ID interface{} `json:"id"`
-	ShortUrl interface{} `json:"shortUrl"`
+import (
+	"encoding/json"
+	"net/http"
+)
+
+func Response(w http.ResponseWriter, code int, data interface{}) {
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(data)
 }
