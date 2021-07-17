@@ -38,12 +38,34 @@ func NewStorageRedis(client *redis.Client) (storage *StorageRedis) {
 	}
 }
 
+func (s *StorageRedis) SaveClientIP(clientIP string, expireAt time.Time) error {
+	if status := s.client.Incr(clientIP); status.Err() != nil {
+		return status.Err()
+	}
+
+	if status := s.client.ExpireAt(clientIP, expireAt); status.Err() != nil {
+		return status.Err()
+	}
+	return nil
+}
+
+func (s *StorageRedis) LoadClientIP(clientIP string) (int, error) {
+	result := s.client.Get(clientIP)
+	if result.Err() != nil {
+		if result.Err() == redis.Nil {
+			return 0, nil
+		}
+		return 0, result.Err()
+	}
+	return result.Int()
+}
+
 func (s *StorageRedis) Save(urlID, url, expireAt string) error {
-	expireAtTime, _ := time.Parse(time.RFC3339, expireAt)
 	if status := s.client.Set(urlID, url, 0); status.Err() != nil {
 		return status.Err()
 	}
 
+	expireAtTime, _ := time.Parse(time.RFC3339, expireAt)
 	if status := s.client.ExpireAt(urlID, expireAtTime); status.Err() != nil {
 		return status.Err()
 	}

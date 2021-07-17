@@ -14,7 +14,7 @@ func main() {
 		Password: "",
 		DB:       0,
 		PoolSize: 50,
-		Timeout: 10000,
+		Timeout:  10000,
 	}
 	client, err := redis.NewRedisClient(cfg)
 	if err != nil {

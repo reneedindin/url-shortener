@@ -3,7 +3,9 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -12,7 +14,11 @@ import (
 	"url-shortener/util"
 )
 
-const urlHost = "http://localhost:8080/%s"
+const (
+	urlHost = "http://localhost:8080/%s"
+
+	verifyUploadCountByDay = 5
+)
 
 func New(storage repository.Storage) *mux.Router {
 	handler := &handler{
@@ -29,9 +35,43 @@ type handler struct {
 	storage repository.Storage
 }
 
+func getClientIP(r *http.Request) string {
+	xForwardedFor := r.Header.Get("X-Forwarded-For")
+	ips := strings.Split(strings.TrimSpace(xForwardedFor), ",")
+	ip := ips[0]
+	if ip != "" {
+		return ip
+	}
+
+	ip = strings.TrimSpace(r.Header.Get("X-Real-Ip"))
+	if ip != "" {
+		return ip
+	}
+
+	if ip, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr)); err == nil {
+		return ip
+	}
+
+	return ip
+}
+
+func (h *handler) checkValidIP(r *http.Request) (bool, error) {
+	count, err := h.storage.LoadClientIP(getClientIP(r))
+	if err != nil {
+		return false, err
+	}
+	if count >= verifyUploadCountByDay {
+		return false, nil
+	}
+
+	if err := h.storage.SaveClientIP(getClientIP(r), time.Now().Add(24*time.Hour)); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func (h *handler) UploadURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
 	var shortURLInfo model.ShortURLInfo
 	if err := json.NewDecoder(r.Body).Decode(&shortURLInfo); err != nil {
 		Response(w, http.StatusInternalServerError, nil)
@@ -43,9 +83,18 @@ func (h *handler) UploadURL(w http.ResponseWriter, r *http.Request) {
 		Response(w, http.StatusInternalServerError, nil)
 		return
 	}
-
 	if expireAt.Before(time.Now()) {
 		Response(w, http.StatusBadRequest, nil)
+		return
+	}
+
+	isValid, err := h.checkValidIP(r)
+	if err != nil {
+		Response(w, http.StatusInternalServerError, nil)
+		return
+	}
+	if !isValid {
+		Response(w, http.StatusUnauthorized, nil)
 		return
 	}
 

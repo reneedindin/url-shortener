@@ -5,7 +5,7 @@ import (
 )
 
 func GenUrlID(url, expireAt string) string {
-	data := url+expireAt
+	data := url + expireAt
 	urlEncode := base64.StdEncoding.EncodeToString([]byte(data))
 	return urlEncode
 }
