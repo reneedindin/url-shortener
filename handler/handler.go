@@ -74,6 +74,11 @@ func (h *handler) UploadURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(shortURLInfo.URL) == 0 || len(shortURLInfo.ExpireAt) == 0 {
+		Response(w, http.StatusBadRequest, nil)
+		return
+	}
+
 	expireAt, err := time.Parse(time.RFC3339, shortURLInfo.ExpireAt)
 	if err != nil {
 		Response(w, http.StatusInternalServerError, nil)
