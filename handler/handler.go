@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"url-shortener/model"
@@ -34,6 +35,17 @@ func (h *handler)UploadURL(w http.ResponseWriter, r *http.Request) {
 	var shortURLInfo model.ShortURLInfo
 	if err := json.NewDecoder(r.Body).Decode(&shortURLInfo); err != nil {
 		Response(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	expireAt, err := time.Parse(time.RFC3339, shortURLInfo.ExpireAt)
+	if err != nil {
+		Response(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	if expireAt.Before(time.Now()) {
+		Response(w, http.StatusBadRequest, nil)
 		return
 	}
 

@@ -33,15 +33,12 @@ func NewStorageRedis(client *redis.Client) (storage *StorageRedis) {
 }
 
 func (s *StorageRedis) Save(urlID, url, expireAt string) error {
-	time, err := time.Parse(time.RFC3339, expireAt)
-	if err != nil {
-		return err
-	}
+	expireAtTime, _ := time.Parse(time.RFC3339, expireAt)
 	if status := s.client.Set(urlID, url, 0); status.Err() != nil {
 		return status.Err()
 	}
 
-	if status := s.client.ExpireAt(urlID, time); status.Err() != nil {
+	if status := s.client.ExpireAt(urlID, expireAtTime); status.Err() != nil {
 		return status.Err()
 	}
 	return nil
