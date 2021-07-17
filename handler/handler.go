@@ -17,7 +17,7 @@ import (
 const (
 	urlHost = "http://localhost:8080/%s"
 
-	verifyUploadCountByDay = 5
+	verifyUploadCountByDay = 100
 )
 
 func New(storage repository.Storage) *mux.Router {
@@ -63,10 +63,6 @@ func (h *handler) checkValidIP(r *http.Request) (bool, error) {
 	if count >= verifyUploadCountByDay {
 		return false, nil
 	}
-
-	if err := h.storage.SaveClientIP(getClientIP(r), time.Now().Add(24*time.Hour)); err != nil {
-		return false, err
-	}
 	return true, nil
 }
 
@@ -100,6 +96,10 @@ func (h *handler) UploadURL(w http.ResponseWriter, r *http.Request) {
 
 	urlID := util.GenUrlID(shortURLInfo.URL, shortURLInfo.ExpireAt)
 	if err := h.storage.Save(urlID, shortURLInfo.URL, shortURLInfo.ExpireAt); err != nil {
+		Response(w, http.StatusInternalServerError, nil)
+		return
+	}
+	if err := h.storage.SaveClientIP(getClientIP(r), time.Now().Add(24*time.Hour)); err != nil {
 		Response(w, http.StatusInternalServerError, nil)
 		return
 	}
