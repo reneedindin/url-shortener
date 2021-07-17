@@ -1,0 +1,17 @@
+version: "3.5"
+
+services:
+  # Redis
+  redis:
+    container_name: redis
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+  server:
+    image: url-shortener:latest
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+    restart: always

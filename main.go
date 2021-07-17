@@ -10,7 +10,7 @@ import (
 
 func main() {
 	cfg := &redis.Config{
-		Addr:     "127.0.0.1:6379",
+		Addr:     "redis:6379",
 		Password: "",
 		DB:       0,
 		PoolSize: 50,
