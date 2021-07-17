@@ -1,7 +1,9 @@
 package redis
 
 type Config struct {
-	Addr string
+	Addr     string
 	Password string
-	DB int
+	DB       int
+	PoolSize int
+	Timeout  int
 }

@@ -8,11 +8,13 @@ import (
 	"url-shortener/repository/redis"
 )
 
-func main(){
+func main() {
 	cfg := &redis.Config{
-		Addr: "127.0.0.1:6379",
+		Addr:     "127.0.0.1:6379",
 		Password: "",
-		DB: 0,
+		DB:       0,
+		PoolSize: 50,
+		Timeout: 10000,
 	}
 	client, err := redis.NewRedisClient(cfg)
 	if err != nil {

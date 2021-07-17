@@ -29,7 +29,7 @@ type handler struct {
 	storage repository.Storage
 }
 
-func (h *handler)UploadURL(w http.ResponseWriter, r *http.Request) {
+func (h *handler) UploadURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var shortURLInfo model.ShortURLInfo
@@ -56,13 +56,13 @@ func (h *handler)UploadURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := model.URL{
-		ID: urlID,
+		ID:       urlID,
 		ShortUrl: fmt.Sprintf(urlHost, urlID),
 	}
 	Response(w, http.StatusOK, data)
 }
 
-func (h *handler)RedirectURL(w http.ResponseWriter, r *http.Request) {
+func (h *handler) RedirectURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	params := mux.Vars(r)

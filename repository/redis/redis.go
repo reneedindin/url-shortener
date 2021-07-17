@@ -8,12 +8,18 @@ import (
 	"url-shortener/model"
 )
 
-
 func NewRedisClient(cfg *Config) (client *redis.Client, err error) {
+	timeout := time.Millisecond * time.Duration(cfg.Timeout)
 	client = redis.NewClient(&redis.Options{
-		Addr: cfg.Addr,
-		Password: cfg.Password,
-		DB: cfg.DB,
+		Addr:         cfg.Addr,
+		Password:     cfg.Password,
+		DB:           cfg.DB,
+		PoolSize:     cfg.PoolSize,
+		PoolTimeout:  timeout,
+		DialTimeout:  timeout,
+		ReadTimeout:  timeout,
+		WriteTimeout: timeout,
+		IdleTimeout:  timeout,
 	})
 	_, err = client.Ping().Result()
 	if err != nil {
@@ -51,7 +57,7 @@ func (s *StorageRedis) Load(urlID string) (model.URL, error) {
 	}
 
 	shortURL := model.URL{
-		ID: urlID,
+		ID:       urlID,
 		ShortUrl: result.Val(),
 	}
 	return shortURL, nil
